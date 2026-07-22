@@ -1,26 +1,129 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #e9e7ec;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-manrope);
+  --font-voice: var(--font-source-serif);
+
+  /* Bloom Task brand tokens — ported 1:1 from theme/colors.ts in the app */
+  --color-bloom-bg: #000000;
+  --color-bloom-surface: #000000;
+  --color-bloom-elevated: #000000;
+  --color-bloom-border: rgba(255, 255, 255, 0.06);
+  --color-bloom-text: #e9e7ec;
+  --color-bloom-text-muted: #79757f;
+  --color-bloom-text-soft: #b4b0bc;
+
+  --color-bloom-green: #87e64b;
+  --color-bloom-green-light: #a8ee6f;
+  --color-bloom-green-deep: #5fb030;
+  --color-bloom-green-deepest: #3b6b15;
+  --color-bloom-on-green: #16220a;
+
+  --color-bloom-blue: #4fb4f0;
+  --color-bloom-blue-light: #a9e1ff;
+  --color-bloom-blue-deep: #2d7fbf;
+
+  /* Subtle idle bob for the "how it works" icon orbs */
+  --animate-float: float 6s ease-in-out infinite;
+  /* Slow diagonal shine sweeping across the site-wide grid background */
+  --animate-grid-shine: grid-shine 16s linear infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
   }
 }
 
+@keyframes grid-shine {
+  0% {
+    background-position: 200% 0%;
+  }
+  100% {
+    background-position: -200% 0%;
+  }
+}
+
+/* Saves section rings backdrop — a rotating "sonar" arc riding on each ring
+   (plain rotation on a solid-color circle is invisible, since a circle is
+   rotationally symmetric; the arc is what makes the spin actually read) plus
+   a shared breathing scale for the organic pulse. translate(-50%, -50%) is
+   baked into every keyframe step rather than left on a Tailwind utility
+   class, because an `animation` targeting `transform` fully replaces the
+   element's computed transform each frame — a separate translate class
+   would just get clobbered. */
+@keyframes ring-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ring-spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes ring-pulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Safety net: several sections animate decorative glow/shine layers with
+     transforms (scale, translateX) sized in vw units. Every one of them is
+     meant to be clipped by a local overflow-hidden wrapper, but a single
+     missed case is enough to produce a real (if brief) horizontal
+     scrollbar as the animation runs. Belt-and-suspenders so that can never
+     reach the viewport regardless of what a future section gets wrong.
+     `clip`, not `hidden` — `hidden` (or `auto`) makes an axis's computed
+     overflow non-`visible`, and the CSS overflow pairing rule then forces
+     the *other* axis to `auto` too, turning html/body into an actual
+     scroll container. That broke the phone showcase: its `position:
+     sticky` pinning and Framer's useScroll() both assume the document's
+     real scrolling element is the only scroll container on the page.
+     `clip` visually clips the same way but pairs as `clip`, not `auto`,
+     so it never creates that second scroll container. */
+  overflow-x: clip;
+}
+
 body {
+  overflow-x: clip;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
